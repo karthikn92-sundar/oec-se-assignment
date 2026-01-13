@@ -1,10 +1,3 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using RL.Backend.Exceptions;
-using RL.Backend.Models;
-using RL.Data;
-using RL.Data.DataModels;
-
 namespace RL.Backend.Commands.Handlers.Plans;
 
 public class AddProcedureToPlanCommandHandler : IRequestHandler<AddProcedureToPlanCommand, ApiResponse<Unit>>

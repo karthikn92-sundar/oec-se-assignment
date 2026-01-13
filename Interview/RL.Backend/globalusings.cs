@@ -1,0 +1,9 @@
+﻿global using MediatR;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.OData.Query;
+global using Microsoft.EntityFrameworkCore;
+global using RL.Backend.Commands;
+global using RL.Backend.Exceptions;
+global using RL.Backend.Models;
+global using RL.Data;
+global using RL.Data.DataModels;
