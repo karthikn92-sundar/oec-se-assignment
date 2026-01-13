@@ -1,11 +1,4 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
-using RL.Backend.Exceptions;
-using RL.Backend.Models;
-using RL.Data;
-using RL.Data.DataModels;
-
-namespace RL.Backend.Commands.Handlers.Users;
+﻿namespace RL.Backend.Commands.Handlers.Users;
 
 public class RemoveUserFromProcedurePlanCommandHandler : IRequestHandler<RemoveUserFromProcedurePlanCommand, ApiResponse<Unit>>
 {
@@ -21,12 +14,10 @@ public class RemoveUserFromProcedurePlanCommandHandler : IRequestHandler<RemoveU
     {
         try
         {
-            if (request.PlanId < 1)
-                return ApiResponse<Unit>.Fail(new BadRequestException("Invalid PlanId"));
-
-            if (request.ProcedureId < 1)
-                return ApiResponse<Unit>.Fail(new BadRequestException("Invalid ProcedureId"));
-
+            if (request.PlanId < 1 || request.ProcedureId < 1)
+                return ApiResponse<Unit>.Fail(
+                    new BadRequestException("Invalid PlanId or ProcedureId"));
+                        
             if (request.UserId is null)
             {
                 // Remove ALL users for the given Plan + Procedure

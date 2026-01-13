@@ -64,7 +64,7 @@ export const removeUserFromProcedurePlan = async (planId, procedureId, userId) =
     const url = `${api_url}/Procedures/RemoveUserFromProcedurePlan`;
     var command = { planId: planId, procedureId: procedureId, userId: userId };
     const response = await fetch(url, {
-        method: "POST",
+        method: "DELETE",
         headers: {
             Accept: "application/json",
             "Content-Type": "application/json",

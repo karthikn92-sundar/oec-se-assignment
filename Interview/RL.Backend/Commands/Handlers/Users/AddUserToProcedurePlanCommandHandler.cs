@@ -1,11 +1,4 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
-using RL.Backend.Exceptions;
-using RL.Backend.Models;
-using RL.Data;
-using RL.Data.DataModels;
-
-namespace RL.Backend.Commands.Handlers.Users;
+﻿namespace RL.Backend.Commands.Handlers.Users;
 
 public class AddUserToProcedurePlanCommandHandler : IRequestHandler<AddUserToProcedurePlanCommand, ApiResponse<Unit>>
 {
@@ -22,42 +15,40 @@ public class AddUserToProcedurePlanCommandHandler : IRequestHandler<AddUserToPro
         try
         {
             // Validate input
-            if (request.PlanId < 1)
-                return ApiResponse<Unit>.Fail(new BadRequestException("Invalid PlanId"));
-            if (request.ProcedureId < 1)
-                return ApiResponse<Unit>.Fail(new BadRequestException("Invalid ProcedureId"));
-            if (request.UserId < 1)
-                return ApiResponse<Unit>.Fail(new BadRequestException("Invalid UserId"));
+            if (request.PlanId < 1 || request.ProcedureId < 1 || request.UserId < 1)
+                return ApiResponse<Unit>.Fail(
+                    new BadRequestException("Invalid PlanId, ProcedureId or UserId"));
 
-            var planProcedure = await _context.PlanProcedures
-                .FirstOrDefaultAsync(pp => pp.PlanId == request.PlanId && pp.ProcedureId == request.ProcedureId);
+            var planProcedureExists = await _context.PlanProcedures
+                .AnyAsync(pp => pp.PlanId == request.PlanId && pp.ProcedureId == request.ProcedureId, cancellationToken);
 
-            if (planProcedure == null)
+            if (!planProcedureExists)
                 return ApiResponse<Unit>.Fail(new NotFoundException("PlanProcedure link does not exist."));
 
-            var userExists = await _context.Users.AnyAsync(u => u.UserId == request.UserId);
+            var userExists = await _context.Users.AnyAsync(u => u.UserId == request.UserId, cancellationToken);
             if (!userExists)
                 return ApiResponse<Unit>.Fail(new NotFoundException($"UserId {request.UserId} not found"));
 
             var alreadyAssigned = await _context.PlanProcedureUsers.AnyAsync(ppu =>
                 ppu.PlanId == request.PlanId &&
                 ppu.ProcedureId == request.ProcedureId &&
-                ppu.UserId == request.UserId);
+                ppu.UserId == request.UserId, cancellationToken);
 
             if (alreadyAssigned)
                 return ApiResponse<Unit>.Succeed(Unit.Value);
 
+            var utcNow = DateTime.UtcNow;
+
             // Assign the user to the plan-procedure
-            var newAssignment = new PlanProcedureUser
+            _context.PlanProcedureUsers.Add(new PlanProcedureUser
             {
                 PlanId = request.PlanId,
                 ProcedureId = request.ProcedureId,
                 UserId = request.UserId,
-                CreateDate = DateTime.UtcNow,
-                UpdateDate = DateTime.UtcNow
-            };
+                CreateDate = utcNow,
+                UpdateDate = utcNow
+            });
 
-            _context.PlanProcedureUsers.Add(newAssignment);
             await _context.SaveChangesAsync(cancellationToken);
 
             return ApiResponse<Unit>.Succeed(Unit.Value);
@@ -66,6 +57,7 @@ public class AddUserToProcedurePlanCommandHandler : IRequestHandler<AddUserToPro
         {
             _logger.LogError(ex, "Error adding user to procedure plan. PlanId: {PlanId}, ProcedureId: {ProcedureId}, UserId: {UserId}",
                  request.PlanId, request.ProcedureId, request.UserId);
+
             return ApiResponse<Unit>.Fail(ex);
         }
     }

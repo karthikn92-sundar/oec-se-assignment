@@ -1,11 +1,3 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
-using RL.Backend.Commands;
-using RL.Backend.Models;
-using RL.Data;
-using RL.Data.DataModels;
-
 namespace RL.Backend.Controllers;
 
 [ApiController]
@@ -37,7 +29,7 @@ public class ProceduresController : ControllerBase
         return response.ToActionResult();
     }
 
-    [HttpPost("RemoveUserFromProcedurePlan")]
+    [HttpDelete("RemoveUserFromProcedurePlan")]
     public async Task<IActionResult> RemoveUserToProcedurePlan(RemoveUserFromProcedurePlanCommand command, CancellationToken token)
     {
         var response = await _mediator.Send(command, token);
